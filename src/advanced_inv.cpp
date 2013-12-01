@@ -89,6 +89,40 @@ int getsquare(char c , int &off_x, int &off_y, std::string &areastring, advanced
     return getsquare(ret,off_x,off_y,areastring, squares);
 }
 
+void advanced_inventory::move_item(int src, int dest, int it_pos, int amount)
+{
+	// If the active screen has no item.
+	if( panes[src].size == 0 ) 
+		return;
+
+	item new_item = (*panes[src].items[it_pos].it);
+	new_item.charges = amount;
+
+	int destarea = panes[dest].area;
+	if(destarea == isinventory) {
+		new_item.invlet = g->nextinv;
+		g->advance_nextinv();
+		g->u.i_add(new_item,g);
+		g->u.moves -= 100;
+		g->m.i_rem(g->u.posx+panes[src].offx,g->u.posy+panes[src].offy, it_pos);
+
+	// destination is a vehicle
+	} else if (squares[destarea].vstor >= 0) {
+		if( squares[destarea].veh->add_item( squares[destarea].vstor, new_item ) == false) {
+			popup(_("Destination area is full. Remove some items first"));
+			return;
+			panes[src].veh->remove_item (panes[src].vstor, it_pos);
+		}
+
+	} else { // destination is ground
+		if ( g->m.add_item_or_charges(squares[destarea].x, squares[destarea].y, new_item, 0 ) == false ) {
+			popup(_("Destination area is full. Remove some items first"));
+			return;
+		}
+		g->m.i_rem(g->u.posx+panes[src].offx,g->u.posy+panes[src].offy, it_pos);
+	}
+}
+
 void advanced_inventory::print_items(advanced_inventory_pane &pane, bool active)
 {
     std::vector<advanced_inv_listitem> &items = pane.items;

@@ -114,6 +114,7 @@ class advanced_inventory
             isall(10) {
         }
         void display(game *gp, player *pp);
+		void move_item(int src, int dest, int it_pos, int amount);
         void print_items(advanced_inventory_pane &pane, bool active);
         void recalc_pane(int i);
         void redraw_pane(int i);
